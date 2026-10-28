@@ -1,0 +1,36 @@
+name: Publish winter photos
+
+# Publishes this repository's Winter photos for Trail Finder's 3D map at https://allduf.github.io/trail-finder-winter2/,
+# next to the first Winter photo site (allduf/trail-finder-winter, full at ~935 MB of GitHub Pages' 1 GB). The app
+# (same allduf.github.io address) reads blocks.json and the {z}/{x}/{y}.webp tiles from ../trail-finder-winter2/.
+# Built by trail-finder's scripts/winter-photos (build.py, then tiles.py). Runs on every push to main and by hand.
+# Needs Settings > Pages > Source = "GitHub Actions".
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: du -sh --exclude=.git .
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deploy
+        uses: actions/deploy-pages@v4
